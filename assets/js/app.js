@@ -274,96 +274,163 @@
     return root;
   }
 
-  /* ============================ BAGAN ============================ */
+  /* ============================ BAGAN (dua sisi) ============================ */
   function renderBracket(state) {
     const root = el('div', 'view view-bracket');
-    const note = el('div', 'bracket-note', 'Bagan terisi & memperbarui diri otomatis mengikuti hasil laga secara realtime. Geser horizontal untuk melihat seluruh ronde.');
-    root.appendChild(note);
 
-    const ko = {};
-    state.koMatches.forEach(function (m) { ko[m.id] = m; });
-
-    const wrap = el('div', 'bracket-scroll');
-    const board = el('div', 'bracket');
-
-    const rounds = [
-      { key: 'r32', title: '32 Besar', ids: range(73, 88) },
-      { key: 'r16', title: '16 Besar', ids: range(89, 96) },
-      { key: 'qf', title: 'Perempat', ids: range(97, 100) },
-      { key: 'sf', title: 'Semifinal', ids: [101, 102] },
-      { key: 'final', title: 'Final', ids: [104] }
-    ];
-
-    rounds.forEach(function (rnd) {
-      const col = el('div', 'br-col br-' + rnd.key);
-      col.appendChild(el('div', 'br-col-title', rnd.title));
-      const inner = el('div', 'br-col-inner');
-      rnd.ids.forEach(function (n) {
-        inner.appendChild(bracketTie(ko['M' + n]));
-      });
-      col.appendChild(inner);
-      board.appendChild(col);
-    });
-
-    wrap.appendChild(board);
-    root.appendChild(wrap);
-
-    // Final & Juara 3 ringkasan
-    const finals = el('div', 'final-summary');
-    finals.appendChild(finalCard('🏆 Final', ko['M104']));
-    finals.appendChild(finalCard('🥉 Perebutan Juara 3', ko['M103']));
-    root.appendChild(finals);
-
-    // Banner juara
     const champ = winnerLabel(state);
     if (champ) {
       const banner = el('div', 'champ-banner');
       banner.innerHTML = '<div class="champ-trophy">🏆</div><div class="champ-text"><div class="champ-lbl">JUARA DUNIA 2026</div><div class="champ-team">' + champ.flag + ' ' + champ.name + '</div></div>';
-      root.insertBefore(banner, root.firstChild);
+      root.appendChild(banner);
     }
+
+    root.appendChild(el('div', 'bracket-note',
+      'Bagan dua sisi (kiri &amp; kanan) yang bertemu di Final tengah. Terisi &amp; memperbarui diri otomatis mengikuti hasil laga secara realtime — geser horizontal bila perlu.'));
+
+    const ko = {};
+    state.koMatches.forEach(function (m) { ko[m.id] = m; });
+
+    const wrap = el('div', 'bracket-wrap');
+    const board = el('div', 'bracket2');
+
+    // --- Sisi kiri: r32(73-80) -> r16(89-92) -> qf(97-98) -> sf(101) ---
+    const left = el('div', 'bk-side left');
+    left.appendChild(bkCol('32 Besar', 'r32', range(73, 80), ko, 'left', false));
+    left.appendChild(bkCol('16 Besar', 'r16', range(89, 92), ko, 'left', true));
+    left.appendChild(bkCol('Perempat', 'qf', range(97, 98), ko, 'left', true));
+    left.appendChild(bkCol('Semifinal', 'sf', [101], ko, 'left', true));
+
+    // --- Tengah: Final + Juara + Perebutan Juara 3 ---
+    const center = el('div', 'bk-center');
+    center.appendChild(el('div', 'bk-col-title center-title', '🏆 Final'));
+    const cbody = el('div', 'bk-center-body');
+    cbody.appendChild(finalTie(ko['M104'], false));
+    const cm = el('div', 'champ-mini');
+    if (champ) {
+      cm.innerHTML = '<div class="cm-trophy">🏆</div><div class="cm-flag">' + champ.flag + '</div><div class="cm-name">' + champ.name + '</div><div class="cm-lbl">Juara Dunia 2026</div>';
+    } else {
+      cm.innerHTML = '<div class="cm-trophy dim">🏆</div><div class="cm-lbl dim">Menanti sang juara…</div>';
+    }
+    cbody.appendChild(cm);
+    cbody.appendChild(el('div', 'third-title', '🥉 Perebutan Juara 3'));
+    cbody.appendChild(finalTie(ko['M103'], true));
+    center.appendChild(cbody);
+
+    // --- Sisi kanan: sf(102) <- qf(99-100) <- r16(93-96) <- r32(81-88) ---
+    const right = el('div', 'bk-side right');
+    right.appendChild(bkCol('Semifinal', 'sf', [102], ko, 'right', true));
+    right.appendChild(bkCol('Perempat', 'qf', range(99, 100), ko, 'right', true));
+    right.appendChild(bkCol('16 Besar', 'r16', range(93, 96), ko, 'right', true));
+    right.appendChild(bkCol('32 Besar', 'r32', range(81, 88), ko, 'right', false));
+
+    board.appendChild(left);
+    board.appendChild(center);
+    board.appendChild(right);
+    wrap.appendChild(board);
+    root.appendChild(wrap);
 
     return root;
   }
 
-  function bracketTie(m) {
+  function bkCol(title, key, idList, ko, side, recv) {
+    const col = el('div', 'bk-col bk-' + key + (recv ? ' recv' : ''));
+    col.appendChild(el('div', 'bk-col-title', title));
+    const body = el('div', 'bk-col-body');
+    idList.forEach(function (n) {
+      const slot = el('div', 'bk-slot');
+      slot.appendChild(bracketTie(ko['M' + n], side));
+      body.appendChild(slot);
+    });
+    col.appendChild(body);
+    return col;
+  }
+
+  function bracketTie(m, side) {
     if (!m) return el('div', 'br-tie');
-    const tie = el('div', 'br-tie ' + m.status);
+    const tie = el('div', 'br-tie ' + m.status + (side === 'right' ? ' rt' : ''));
     const winSide = global.WC.engine.effectiveWinnerSide(m);
     tie.innerHTML =
-      '<div class="bt-no">' + m.id + ' &middot; ' + fmtDate(m.date).split(',')[1] + '</div>' +
-      btRow(m, 'home', winSide === 'home') +
-      btRow(m, 'away', winSide === 'away') +
+      '<div class="bt-no">' + m.id + ' &middot; ' + shortDate(m.date) + '</div>' +
+      btRow(m, 'home', winSide === 'home', side) +
+      btRow(m, 'away', winSide === 'away', side) +
       (m.status === 'live' ? '<div class="bt-live">LIVE ' + m.minute + "'</div>" : '');
     return tie;
   }
 
-  function btRow(m, side, isWin) {
-    const team = side === 'home' ? m.homeTeam : m.awayTeam;
-    const label = side === 'home' ? m._homeLabel : m._awayLabel;
+  // Bendera kandidat untuk slot yang belum pasti (mis. semua tim Grup A).
+  function refFlags(ref) {
+    if (/^[WR][A-L]$/.test(ref)) {
+      return DATA.GROUPS[ref[1]].map(function (t) { return t.flag; });
+    }
+    return null;
+  }
+
+  // Label ringkas untuk slot bagan yang belum terisi.
+  function slotLabel(ref, fullLabel) {
+    if (/^W[A-L]$/.test(ref)) return 'Juara ' + ref[1];
+    if (/^R[A-L]$/.test(ref)) return 'Ke-2 ' + ref[1];
+    if (/^T[1-8]$/.test(ref)) return 'Pos-3 #' + ref[1];
+    return fullLabel || 'TBD';
+  }
+
+  function btRow(m, sideKey, isWin, side) {
+    const team = sideKey === 'home' ? m.homeTeam : m.awayTeam;
+    const label = sideKey === 'home' ? m._homeLabel : m._awayLabel;
+    const ref = sideKey === 'home' ? m.home.ref : m.away.ref;
     let sc = '';
     if (m.status === 'finished' || m.status === 'live') {
-      sc = m.score[side] == null ? 0 : m.score[side];
-      if (m.penalties && m.penalties[side] != null) sc += ' <small>(' + m.penalties[side] + ')</small>';
+      sc = m.score[sideKey] == null ? 0 : m.score[sideKey];
+      if (m.penalties && m.penalties[sideKey] != null) sc += ' <small>(' + m.penalties[sideKey] + ')</small>';
     }
-    const nameHtml = team
-      ? '<span class="t-flag">' + team.flag + '</span><span class="bt-name">' + team.name + '</span>'
-      : '<span class="bt-name tbd">' + (label || 'TBD') + '</span>';
+    let nameHtml;
+    if (team) {
+      nameHtml = '<span class="bt-id"><span class="t-flag">' + team.flag + '</span><span class="bt-name">' + team.name + '</span></span>';
+    } else {
+      const flags = refFlags(ref);
+      const strip = flags ? '<span class="bt-flags">' + flags.join('') + '</span>' : '';
+      nameHtml = '<span class="bt-id">' + strip + '<span class="bt-name tbd">' + slotLabel(ref, label) + '</span></span>';
+    }
     return '<div class="bt-row' + (isWin ? ' win' : '') + '">' + nameHtml + '<span class="bt-score">' + sc + '</span></div>';
   }
 
-  function finalCard(title, m) {
-    const c = el('div', 'fc');
+  // Kartu Final / Perebutan Juara 3 di tengah bagan.
+  function finalTie(m, isThird) {
+    const c = el('div', 'final-tie' + (isThird ? ' third' : ''));
     if (!m) return c;
     const winSide = global.WC.engine.effectiveWinnerSide(m);
     c.innerHTML =
-      '<div class="fc-title">' + title + '</div>' +
-      '<div class="fc-body">' +
-        '<div class="fc-team' + (winSide === 'home' ? ' win' : '') + '">' + teamCell(m.homeTeam, m._homeLabel) + '</div>' +
-        '<div class="fc-score">' + scoreOrTime(m) + '</div>' +
-        '<div class="fc-team' + (winSide === 'away' ? ' win' : '') + '">' + teamCell(m.awayTeam, m._awayLabel, true) + '</div>' +
-      '</div>' +
-      '<div class="fc-foot">' + statusBadge(m) + ' &middot; ' + m.venue.stadium + '</div>';
+      '<div class="ft-head">' + m.id + ' &middot; ' + shortDate(m.date) + ' &middot; ' + m.venue.city + '</div>' +
+      ftRow(m, 'home', winSide === 'home') +
+      '<div class="ft-vs">' + (m.status === 'scheduled' ? m.time : 'vs') + '</div>' +
+      ftRow(m, 'away', winSide === 'away') +
+      (m.status === 'live' ? '<div class="bt-live">LIVE ' + m.minute + "'</div>" : '');
     return c;
+  }
+
+  function ftRow(m, sideKey, isWin) {
+    const team = sideKey === 'home' ? m.homeTeam : m.awayTeam;
+    const label = sideKey === 'home' ? m._homeLabel : m._awayLabel;
+    const ref = sideKey === 'home' ? m.home.ref : m.away.ref;
+    let sc = '';
+    if (m.status === 'finished' || m.status === 'live') {
+      sc = m.score[sideKey] == null ? 0 : m.score[sideKey];
+      if (m.penalties && m.penalties[sideKey] != null) sc += ' <small>(' + m.penalties[sideKey] + 'p)</small>';
+    }
+    let nameHtml;
+    if (team) {
+      nameHtml = '<span class="t-flag">' + team.flag + '</span> ' + team.name;
+    } else {
+      const flags = refFlags(ref);
+      nameHtml = (flags ? '<span class="bt-flags">' + flags.join('') + '</span> ' : '') + '<span class="tbd">' + slotLabel(ref, label) + '</span>';
+    }
+    return '<div class="ft-row' + (isWin ? ' win' : '') + '"><span class="ft-team">' + nameHtml + '</span><span class="ft-score">' + sc + '</span></div>';
+  }
+
+  function shortDate(iso) {
+    const mo = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const p = iso.split('-');
+    return (+p[2]) + ' ' + mo[+p[1] - 1];
   }
 
   function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }

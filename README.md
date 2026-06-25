@@ -16,7 +16,7 @@ Format baru turnamen: **48 tim · 12 grup (A–L) · 104 pertandingan**.
 | 🔴 **Live** | Ringkasan turnamen, laga yang sedang berlangsung, jadwal hari ini, hasil terbaru |
 | 📅 **Jadwal** | 104 laga dikelompokkan per tanggal, dengan filter per babak (grup → final) |
 | 📊 **Klasemen** | 12 tabel grup dihitung otomatis + tabel **8 peringkat-3 terbaik** |
-| 🏆 **Bagan** | Bracket 32 Besar → 16 Besar → Perempat → Semifinal → Juara 3 → Final |
+| 🏆 **Bagan** | Bracket **dua sisi (kiri–kanan)** yang bertemu di Final tengah; 32 Besar → 16 Besar → Perempat → Semifinal → Juara 3 → Final, dengan **bendera tiap tim** (termasuk bendera kandidat pada slot yang belum pasti) |
 
 ### Integrasi Realtime
 Skor sebuah laga langsung **menggerakkan klasemen dan mengisi bagan** tanpa reload:
