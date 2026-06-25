@@ -1,60 +1,144 @@
 /* =====================================================================
    Vercel Serverless Function — /api/wc
-   Mengambil data Piala Dunia 2026 dari TheSportsDB (server-side, bebas CORS),
-   lalu menormalkannya menjadi JSON ringkas untuk front-end.
+   Mengambil data Piala Dunia 2026 (server-side, bebas CORS) lalu
+   menormalkannya menjadi JSON ringkas untuk front-end.
 
-   Konfigurasi via Environment Variables (opsional):
-     SPORTSDB_KEY     (default "3" — kunci uji gratis TheSportsDB)
-     SPORTSDB_LEAGUE  (default "4429" — id liga FIFA World Cup)
-     SPORTSDB_SEASON  (default "2026")
+   Sumber data (otomatis pilih yang tersedia):
+   1) football-data.org  — bila FOOTBALL_DATA_KEY diisi (DISARANKAN; gratis,
+      tier-nya mencakup kompetisi "WC", skor & klasemen live).
+   2) TheSportsDB        — fallback bila tidak ada kunci.
+
+   Environment Variables:
+     FOOTBALL_DATA_KEY     token gratis dari football-data.org  (utama)
+     FOOTBALL_DATA_COMP    default "WC"
+     FOOTBALL_DATA_SEASON  default "2026"
+     SPORTSDB_KEY/LEAGUE/SEASON  konfigurasi fallback TheSportsDB
    ===================================================================== */
 
-const KEY = process.env.SPORTSDB_KEY || '3';
-const LEAGUE = process.env.SPORTSDB_LEAGUE || '4429';
-const SEASON = process.env.SPORTSDB_SEASON || '2026';
+const FD_KEY = process.env.FOOTBALL_DATA_KEY || process.env.FD_KEY || '';
+const FD_COMP = process.env.FOOTBALL_DATA_COMP || 'WC';
+const FD_SEASON = process.env.FOOTBALL_DATA_SEASON || '2026';
+
+const SDB_KEY = process.env.SPORTSDB_KEY || '3';
+const SDB_LEAGUE = process.env.SPORTSDB_LEAGUE || '4429';
+const SDB_SEASON = process.env.SPORTSDB_SEASON || '2026';
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const base = 'https://www.thesportsdb.com/api/v1/json/' + KEY;
-  const url = base + '/eventsseason.php?id=' + LEAGUE + '&s=' + encodeURIComponent(SEASON);
   try {
-    const r = await fetch(url, { headers: { 'User-Agent': 'wc2026-app/1.0' } });
-    if (!r.ok) throw new Error('upstream HTTP ' + r.status);
-    const j = await r.json();
-    const events = (j && j.events) || [];
-    const matches = events.map(normalize);
-    const groups = {};
-    matches.forEach(function (m) { if (m.group) groups[m.group] = true; });
-
+    const result = FD_KEY ? await fromFootballData() : await fromSportsDB();
     res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=60');
-    res.status(200).json({
-      ok: matches.length > 0,
-      source: 'TheSportsDB',
-      league: LEAGUE,
-      season: SEASON,
-      groupsFound: Object.keys(groups).sort(),
-      count: matches.length,
-      updatedAt: Date.now(),
-      matches: matches
-    });
+    res.status(200).json(result);
   } catch (e) {
     res.status(200).json({
       ok: false,
-      source: 'TheSportsDB',
-      league: LEAGUE,
-      season: SEASON,
+      source: FD_KEY ? 'football-data.org' : 'TheSportsDB',
       error: String((e && e.message) || e),
-      hint: 'Jika kosong/eror, sesuaikan SPORTSDB_LEAGUE/SPORTSDB_SEASON atau pakai SPORTSDB_KEY berbayar.',
+      hint: FD_KEY
+        ? 'Periksa token FOOTBALL_DATA_KEY / FOOTBALL_DATA_SEASON, atau batas rate (10 req/menit).'
+        : 'Isi FOOTBALL_DATA_KEY untuk data live, atau sesuaikan SPORTSDB_LEAGUE/SEASON.',
       matches: []
     });
   }
 };
 
+/* ----------------------- football-data.org ----------------------- */
+async function fromFootballData() {
+  const url = 'https://api.football-data.org/v4/competitions/' + FD_COMP +
+    '/matches?season=' + encodeURIComponent(FD_SEASON);
+  const r = await fetch(url, { headers: { 'X-Auth-Token': FD_KEY } });
+  if (!r.ok) throw new Error('football-data HTTP ' + r.status);
+  const j = await r.json();
+  const matches = (j.matches || []).map(normFD);
+  const groups = {};
+  matches.forEach(function (m) { if (m.group) groups[m.group] = true; });
+  return {
+    ok: matches.length > 0,
+    source: 'football-data.org',
+    comp: FD_COMP, season: FD_SEASON,
+    groupsFound: Object.keys(groups).sort(),
+    count: matches.length,
+    updatedAt: Date.now(),
+    matches: matches
+  };
+}
+
+function normFD(m) {
+  const stage = (m.stage === 'GROUP_STAGE') ? 'group' : 'ko';
+  const grp = m.group ? String(m.group).replace(/group[_ ]?/i, '').trim().toUpperCase() : null;
+  const ft = (m.score && m.score.fullTime) || {};
+  const hs = (ft.home == null) ? null : ft.home;
+  const as = (ft.away == null) ? null : ft.away;
+  const st = (m.status || '').toUpperCase();
+  let status = 'scheduled', minute = 0;
+  if (st === 'FINISHED' || st === 'AWARDED') status = 'finished';
+  else if (st === 'IN_PLAY' || st === 'PAUSED' || st === 'LIVE' || st === 'SUSPENDED') {
+    status = 'live'; minute = parseInt(m.minute, 10) || 0;
+  }
+  const wib = utcToWIB(m.utcDate);
+  return {
+    id: 'FD' + m.id,
+    stage: stage,
+    group: stage === 'group' ? grp : null,
+    round: m.stage || '',
+    home: teamName(m.homeTeam),
+    away: teamName(m.awayTeam),
+    homeScore: hs,
+    awayScore: as,
+    date: wib.date,
+    time: wib.time,
+    tz: 'WIB',
+    venue: m.venue || '',
+    status: status,
+    minute: minute,
+    raw: st
+  };
+}
+
+function teamName(t) {
+  if (!t) return '';
+  return t.name || t.shortName || t.tla || '';
+}
+
+function utcToWIB(iso) {
+  if (!iso) return { date: '', time: '' };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { date: '', time: '' };
+  const w = new Date(d.getTime() + 7 * 3600 * 1000); // WIB = UTC+7
+  const pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  return {
+    date: w.getUTCFullYear() + '-' + pad(w.getUTCMonth() + 1) + '-' + pad(w.getUTCDate()),
+    time: pad(w.getUTCHours()) + ':' + pad(w.getUTCMinutes())
+  };
+}
+
+/* --------------------------- TheSportsDB --------------------------- */
+async function fromSportsDB() {
+  const url = 'https://www.thesportsdb.com/api/v1/json/' + SDB_KEY +
+    '/eventsseason.php?id=' + SDB_LEAGUE + '&s=' + encodeURIComponent(SDB_SEASON);
+  const r = await fetch(url, { headers: { 'User-Agent': 'wc2026-app/1.0' } });
+  if (!r.ok) throw new Error('upstream HTTP ' + r.status);
+  const j = await r.json();
+  const events = (j && j.events) || [];
+  const matches = events.map(normSDB);
+  const groups = {};
+  matches.forEach(function (m) { if (m.group) groups[m.group] = true; });
+  return {
+    ok: matches.length > 0,
+    source: 'TheSportsDB',
+    league: SDB_LEAGUE, season: SDB_SEASON,
+    groupsFound: Object.keys(groups).sort(),
+    count: matches.length,
+    updatedAt: Date.now(),
+    matches: matches
+  };
+}
+
 function num(v) {
   return (v === null || v === undefined || v === '') ? null : parseInt(v, 10);
 }
 
-function normalize(e) {
+function normSDB(e) {
   const grpRaw = (e.strGroup || '').trim();
   const isGroup = /group/i.test(grpRaw);
   const hs = num(e.intHomeScore);
@@ -87,6 +171,7 @@ function normalize(e) {
     awayScore: as,
     date: e.dateEvent || '',
     time: (e.strTime || '').slice(0, 5),
+    tz: 'WIB',
     venue: (e.strVenue || '').trim(),
     status: status,
     minute: minute,
