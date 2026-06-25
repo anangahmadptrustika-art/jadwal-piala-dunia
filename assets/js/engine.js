@@ -1,0 +1,194 @@
+/* =====================================================================
+   ENGINE  -  Logika klasemen & resolusi bagan babak gugur
+   Murni fungsi: menerima state (daftar match), menghasilkan turunan.
+   ===================================================================== */
+
+(function (global) {
+  'use strict';
+
+  const data = global.WC.data;
+
+  function emptyRow(team, group, idx) {
+    return {
+      team: team, group: group, idx: idx,
+      P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, Pts: 0,
+      pos: 0
+    };
+  }
+
+  // Hitung klasemen seluruh grup dari daftar laga grup yang sudah/ sedang dimainkan.
+  function computeStandings(groupMatches) {
+    const tables = {};
+    data.GROUP_KEYS.forEach(function (gk) {
+      tables[gk] = data.GROUPS[gk].map(function (team, i) {
+        return emptyRow(team, gk, i);
+      });
+    });
+
+    groupMatches.forEach(function (m) {
+      if (m.score.home == null || m.score.away == null) return;
+      if (m.status !== 'finished' && m.status !== 'live') return;
+
+      const row = tables[m.group];
+      const h = row[m.home.idx];
+      const a = row[m.away.idx];
+      const hs = m.score.home, as = m.score.away;
+
+      h.P++; a.P++;
+      h.GF += hs; h.GA += as;
+      a.GF += as; a.GA += hs;
+
+      if (hs > as) { h.W++; a.L++; h.Pts += 3; }
+      else if (hs < as) { a.W++; h.L++; a.Pts += 3; }
+      else { h.D++; a.D++; h.Pts += 1; a.Pts += 1; }
+    });
+
+    // Urutkan tiap grup
+    data.GROUP_KEYS.forEach(function (gk) {
+      tables[gk].forEach(function (r) { r.GD = r.GF - r.GA; });
+      tables[gk].sort(cmpRow);
+      tables[gk].forEach(function (r, i) { r.pos = i + 1; });
+    });
+
+    return tables;
+  }
+
+  function cmpRow(a, b) {
+    if (b.Pts !== a.Pts) return b.Pts - a.Pts;
+    if (b.GD !== a.GD) return b.GD - a.GD;
+    if (b.GF !== a.GF) return b.GF - a.GF;
+    return a.team.name.localeCompare(b.team.name);
+  }
+
+  // Peringkat 8 tim peringkat-3 terbaik (lintas grup).
+  function rankThirdPlaced(tables) {
+    const thirds = data.GROUP_KEYS.map(function (gk) {
+      const r = tables[gk][2]; // posisi ke-3
+      return Object.assign({}, r, { group: gk });
+    });
+    thirds.sort(cmpRow);
+    return thirds; // [0..7] adalah T1..T8
+  }
+
+  // Apakah seluruh laga grup sudah selesai? (untuk validasi peringkat-3 final)
+  function groupStageComplete(groupMatches) {
+    return groupMatches.every(function (m) { return m.status === 'finished'; });
+  }
+
+  // Map grup -> apakah seluruh 6 laga grup itu sudah selesai.
+  function groupCompletion(groupMatches) {
+    const done = {};
+    data.GROUP_KEYS.forEach(function (gk) { done[gk] = true; });
+    groupMatches.forEach(function (m) {
+      if (m.status !== 'finished') done[m.group] = false;
+    });
+    return done;
+  }
+
+  /* Resolusi referensi slot babak gugur menjadi tim konkret.
+     Mengembalikan map: refKey -> { team, label, resolved } */
+  function buildSlotResolver(tables, thirds, koMatches, groupDone, allGroupsDone) {
+    const cache = {};
+
+    // Tim juara/runner-up baru dianggap pasti bila grupnya sudah selesai.
+    function groupTeam(letter, pos) {
+      if (!groupDone[letter]) return null;
+      const t = tables[letter];
+      if (!t) return null;
+      const row = t[pos - 1];
+      return row ? row.team : null;
+    }
+
+    function resolveRef(ref) {
+      if (cache[ref] !== undefined) return cache[ref];
+      let res = { team: null, label: ref, resolved: false };
+
+      if (/^W[A-L]$/.test(ref)) {
+        res = { team: groupTeam(ref[1], 1), label: 'Juara Grup ' + ref[1], resolved: false };
+      } else if (/^R[A-L]$/.test(ref)) {
+        res = { team: groupTeam(ref[1], 2), label: 'Runner-up Grup ' + ref[1], resolved: false };
+      } else if (/^T[1-8]$/.test(ref)) {
+        // Peringkat-3 lintas grup baru pasti bila SELURUH fase grup selesai.
+        const n = parseInt(ref[1], 10);
+        const row = allGroupsDone ? thirds[n - 1] : null;
+        res = { team: row ? row.team : null, label: 'Peringkat-3 #' + n, resolved: false };
+      } else if (/^W#M\d+$/.test(ref)) {
+        const mid = ref.split('#')[1];
+        const m = koMatches[mid];
+        const w = winnerOf(m);
+        res = { team: w, label: 'Pemenang ' + mid, resolved: !!w };
+      } else if (/^L#M\d+$/.test(ref)) {
+        const mid = ref.split('#')[1];
+        const m = koMatches[mid];
+        const l = loserOf(m);
+        res = { team: l, label: 'Kalah ' + mid, resolved: !!l };
+      }
+      cache[ref] = res;
+      return res;
+    }
+
+    return resolveRef;
+  }
+
+  function effectiveWinnerSide(m) {
+    if (!m || m.status !== 'finished') return null;
+    const hs = m.score.home, as = m.score.away;
+    if (hs == null || as == null) return null;
+    if (hs > as) return 'home';
+    if (as > hs) return 'away';
+    // imbang -> adu penalti
+    const ph = m.penalties ? m.penalties.home : null;
+    const pa = m.penalties ? m.penalties.away : null;
+    if (ph != null && pa != null) return ph > pa ? 'home' : (pa > ph ? 'away' : null);
+    return null;
+  }
+
+  function winnerOf(m) {
+    const side = effectiveWinnerSide(m);
+    if (!side) return null;
+    return side === 'home' ? m.homeTeam : m.awayTeam;
+  }
+  function loserOf(m) {
+    const side = effectiveWinnerSide(m);
+    if (!side) return null;
+    return side === 'home' ? m.awayTeam : m.homeTeam;
+  }
+
+  /* Isi homeTeam/awayTeam pada seluruh laga babak gugur sesuai hasil terkini.
+     Dilakukan berulang sampai stabil (karena ada rantai ketergantungan). */
+  function resolveBracket(state) {
+    const tables = computeStandings(state.groupMatches);
+    const thirds = rankThirdPlaced(tables);
+    const groupDone = groupCompletion(state.groupMatches);
+    const allGroupsDone = data.GROUP_KEYS.every(function (gk) { return groupDone[gk]; });
+    const koIndex = {};
+    state.koMatches.forEach(function (m) { koIndex[m.id] = m; });
+
+    // beberapa iterasi untuk merambatkan pemenang ke ronde berikut
+    for (let pass = 0; pass < 8; pass++) {
+      const resolve = buildSlotResolver(tables, thirds, koIndex, groupDone, allGroupsDone);
+      state.koMatches.forEach(function (m) {
+        const h = resolve(m.home.ref);
+        const a = resolve(m.away.ref);
+        m.homeTeam = h.team;
+        m.awayTeam = a.team;
+        m._homeLabel = h.label;
+        m._awayLabel = a.label;
+      });
+    }
+
+    return { tables: tables, thirds: thirds };
+  }
+
+  global.WC.engine = {
+    computeStandings: computeStandings,
+    rankThirdPlaced: rankThirdPlaced,
+    groupStageComplete: groupStageComplete,
+    groupCompletion: groupCompletion,
+    resolveBracket: resolveBracket,
+    winnerOf: winnerOf,
+    loserOf: loserOf,
+    effectiveWinnerSide: effectiveWinnerSide
+  };
+
+})(window);
