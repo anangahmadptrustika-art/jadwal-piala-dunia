@@ -299,7 +299,8 @@
     }
 
     root.appendChild(el('div', 'bracket-note',
-      'Bagan dua sisi (kiri &amp; kanan) yang bertemu di Final tengah. Terisi &amp; memperbarui diri otomatis mengikuti hasil laga secara realtime — geser horizontal bila perlu.'));
+      'Bagan dua sisi (kiri &amp; kanan) bertemu di Final tengah, memperbarui diri otomatis secara realtime. ' +
+      'Tanda <b class="prov-mark">●</b> = posisi sementara (grup belum selesai); kode seperti <b>J1</b>/<b>A2</b>/<b>3 ABCDF</b> = slot yang belum pasti. Geser horizontal bila perlu.'));
 
     const ko = {};
     state.koMatches.forEach(function (m) { ko[m.id] = m; });
@@ -396,6 +397,7 @@
     const team = sideKey === 'home' ? m.homeTeam : m.awayTeam;
     const label = sideKey === 'home' ? m._homeLabel : m._awayLabel;
     const ref = sideKey === 'home' ? m.home.ref : m.away.ref;
+    const prov = sideKey === 'home' ? m._homeProvisional : m._awayProvisional;
     let sc = '';
     if (m.status === 'finished' || m.status === 'live') {
       sc = m.score[sideKey] == null ? 0 : m.score[sideKey];
@@ -403,7 +405,8 @@
     }
     let nameHtml;
     if (team) {
-      nameHtml = '<span class="bt-id">' + flagImg(team) + '<span class="bt-name">' + team.name + '</span></span>';
+      const mark = prov ? '<i class="prov-mark" title="Posisi sementara — grup belum selesai">●</i>' : '';
+      nameHtml = '<span class="bt-id">' + flagImg(team) + '<span class="bt-name' + (prov ? ' prov' : '') + '">' + team.name + '</span>' + mark + '</span>';
     } else {
       nameHtml = '<span class="bt-id"><span class="bt-code">' + slotCode(ref, label) + '</span></span>';
     }

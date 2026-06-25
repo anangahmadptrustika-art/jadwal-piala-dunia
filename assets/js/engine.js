@@ -90,13 +90,15 @@
   function buildSlotResolver(tables, thirds, koMatches, groupDone, allGroupsDone, thirdSlotMap) {
     const cache = {};
 
-    // Tim juara/runner-up baru dianggap pasti bila grupnya sudah selesai.
+    // Tampilkan tim yang menempati posisi itu bila grup sudah punya hasil.
+    // 'confirmed' = grup selesai (pasti); selain itu = posisi sementara.
     function groupTeam(letter, pos) {
-      if (!groupDone[letter]) return null;
       const t = tables[letter];
       if (!t) return null;
       const row = t[pos - 1];
-      return row ? row.team : null;
+      if (!row) return null;
+      const hasData = t.some(function (r) { return r.P > 0; });
+      return hasData ? row.team : null;
     }
 
     function resolveRef(ref) {
@@ -104,9 +106,13 @@
       let res = { team: null, label: ref, resolved: false };
 
       if (/^W[A-L]$/.test(ref)) {
-        res = { team: groupTeam(ref[1], 1), label: 'Juara Grup ' + ref[1], resolved: false };
+        const team = groupTeam(ref[1], 1);
+        const done = groupDone[ref[1]];
+        res = { team: team, label: 'Juara Grup ' + ref[1], resolved: done, provisional: !!team && !done };
       } else if (/^R[A-L]$/.test(ref)) {
-        res = { team: groupTeam(ref[1], 2), label: 'Runner-up Grup ' + ref[1], resolved: false };
+        const team = groupTeam(ref[1], 2);
+        const done = groupDone[ref[1]];
+        res = { team: team, label: 'Runner-up Grup ' + ref[1], resolved: done, provisional: !!team && !done };
       } else if (/^T:/.test(ref)) {
         // Peringkat-3: dialokasikan ke slot sesuai tabel FIFA (himpunan grup asal).
         // Baru pasti bila SELURUH fase grup selesai.
@@ -232,6 +238,8 @@
         m.awayTeam = a.team;
         m._homeLabel = h.label;
         m._awayLabel = a.label;
+        m._homeProvisional = !!h.provisional;
+        m._awayProvisional = !!a.provisional;
       });
     }
 

@@ -278,6 +278,8 @@ html, body {
   border-radius: 5px; padding: 2px 7px; letter-spacing: .5px;
 }
 .ft-team .bt-code { font-size: 12px; }
+.bt-name.prov { font-style: italic; }
+.prov-mark { color: var(--gold); font-size: 8px; margin-left: 4px; font-style: normal; vertical-align: middle; }
 .bt-row.win { background: linear-gradient(90deg, rgba(52,211,153,.18), transparent); }
 .br-tie.rt .bt-row.win { background: linear-gradient(270deg, rgba(52,211,153,.18), transparent); }
 .bt-row.win .bt-name { color: var(--green); }
