@@ -37,7 +37,7 @@
 
   // 48 tim dalam 12 grup. Tuan rumah diunggulkan (Meksiko A, Kanada B, USA D).
   // Argumen: nama, kode 3-huruf, emoji bendera (fallback), kode ISO untuk gambar bendera.
-  const GROUPS = {
+  let GROUPS = {
     A: [t('Meksiko', 'MEX', '🇲🇽', 'mx'), t('Kroasia', 'CRO', '🇭🇷', 'hr'), t('Arab Saudi', 'KSA', '🇸🇦', 'sa'), t('Kamerun', 'CMR', '🇨🇲', 'cm')],
     B: [t('Kanada', 'CAN', '🇨🇦', 'ca'), t('Belgia', 'BEL', '🇧🇪', 'be'), t('Ekuador', 'ECU', '🇪🇨', 'ec'), t('Qatar', 'QAT', '🇶🇦', 'qa')],
     C: [t('Argentina', 'ARG', '🇦🇷', 'ar'), t('Norwegia', 'NOR', '🇳🇴', 'no'), t('Jepang', 'JPN', '🇯🇵', 'jp'), t('Pantai Gading', 'CIV', '🇨🇮', 'ci')],
@@ -56,7 +56,15 @@
     return { name: name, code: code, flag: flag, iso: iso };
   }
 
-  const GROUP_KEYS = Object.keys(GROUPS);
+  let GROUP_KEYS = Object.keys(GROUPS);
+
+  // Mengganti komposisi grup saat data live tersedia (mis. dari TheSportsDB).
+  function setGroups(obj) {
+    GROUPS = obj;
+    GROUP_KEYS = Object.keys(obj).sort();
+    global.WC.data.GROUPS = GROUPS;
+    global.WC.data.GROUP_KEYS = GROUP_KEYS;
+  }
 
   // ---- Generator jadwal fase grup (round-robin 4 tim, 3 matchday) ----
   // Pola pertemuan klasik untuk indeks tim [0,1,2,3]
@@ -220,6 +228,7 @@
     VENUES: VENUES,
     GROUPS: GROUPS,
     GROUP_KEYS: GROUP_KEYS,
+    setGroups: setGroups,
     buildGroupMatches: buildGroupMatches,
     buildKnockoutMatches: buildKnockoutMatches
   };

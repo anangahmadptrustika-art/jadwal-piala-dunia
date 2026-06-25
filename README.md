@@ -31,6 +31,26 @@ Skor sebuah laga langsung **menggerakkan klasemen dan mengisi bagan** tanpa relo
    *"Peringkat-3 #1"*, *"Pemenang M73"*) dan **terisi otomatis** begitu hasilnya pasti.
    Babak gugur yang imbang otomatis diselesaikan lewat **adu penalti**.
 
+### Data Live dari Internet (TheSportsDB)
+Aplikasi mencoba menarik **data nyata** (grup, jadwal, skor) dari TheSportsDB
+melalui fungsi serverless Vercel `GET /api/wc`, lalu memperbaruinya otomatis
+tiap 30 detik. Chip di kanan atas menunjukkan sumber data:
+
+- 🟢 **Data Live** — berhasil menarik 12 grup lengkap dari API.
+- 🟡 **Data contoh** — API belum tersedia/lengkap; aplikasi memakai data bawaan.
+
+Konfigurasi (Vercel → Project → Settings → Environment Variables, semuanya opsional):
+
+| Variabel | Default | Keterangan |
+|----------|---------|------------|
+| `SPORTSDB_KEY` | `3` | Kunci API TheSportsDB (gratis untuk uji; isi kunci berbayar bila perlu). |
+| `SPORTSDB_LEAGUE` | `4429` | ID liga FIFA World Cup di TheSportsDB. |
+| `SPORTSDB_SEASON` | `2026` | Musim. |
+
+> Buka `/api/wc` di browser untuk melihat respons mentah & menyesuaikan `league`/`season`
+> bila grup belum terdeteksi. Pengambilan data berjalan di sisi server/klien (bukan saat build),
+> sehingga selalu mengikuti kondisi terkini.
+
 ---
 
 ## 🚀 Menjalankan

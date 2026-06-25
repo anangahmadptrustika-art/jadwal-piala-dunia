@@ -584,6 +584,10 @@
     });
     bindChrome();
     RT.init();
+    // Mulai pengambilan data live (TheSportsDB via /api/wc). Aman bila gagal.
+    if (global.WC.livedata) {
+      try { global.WC.livedata.start(); } catch (e) { /* fallback ke data bawaan */ }
+    }
   }
 
   if (document.readyState === 'loading') {
