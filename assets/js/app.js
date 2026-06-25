@@ -30,9 +30,22 @@
     return e;
   }
 
+  // Gambar bendera asli dari flagcdn (tampil di semua perangkat, termasuk Windows
+  // yang tidak punya font emoji bendera). Mendukung Inggris (gb-eng) & Skotlandia (gb-sct).
+  function flagImg(team, cls) {
+    if (!team || !team.iso) return '';
+    return '<img class="flag ' + (cls || '') + '" src="https://flagcdn.com/' + team.iso +
+      '.svg" alt="' + team.code + '" loading="lazy" decoding="async">';
+  }
+  function flagFromIso(iso, cls) {
+    if (!iso) return '';
+    return '<img class="flag ' + (cls || '') + '" src="https://flagcdn.com/' + iso +
+      '.svg" alt="" loading="lazy" decoding="async">';
+  }
+
   function teamCell(team, label, flip) {
     if (team) {
-      const name = '<span class="t-flag">' + team.flag + '</span><span class="t-name">' + team.name + '</span>';
+      const name = flagImg(team) + '<span class="t-name">' + team.name + '</span>';
       return '<span class="team' + (flip ? ' flip' : '') + '">' + name + '</span>';
     }
     return '<span class="team tbd' + (flip ? ' flip' : '') + '"><span class="t-name">' + (label || 'TBD') + '</span></span>';
@@ -83,7 +96,7 @@
         statCard('104', 'Laga') +
         statCard(String(countFinished()), 'Selesai') +
         statCard(String(live.length), 'Live', live.length ? 'accent' : '') +
-        statCard(champ ? champ.flag : '—', champ ? 'Juara' : 'Juara', champ ? 'gold' : '') +
+        statCard(champ ? flagImg(champ, 'flag-stat') : '—', 'Juara', champ ? 'gold' : '') +
       '</div>';
     root.appendChild(hero);
 
@@ -239,7 +252,7 @@
         const tr = el('tr', qual);
         tr.innerHTML =
           '<td class="pos">' + (i + 1) + '</td>' +
-          '<td class="tl"><span class="t-flag">' + r.team.flag + '</span>' + r.team.name + '</td>' +
+          '<td class="tl">' + flagImg(r.team) + r.team.name + '</td>' +
           '<td>' + r.P + '</td><td>' + r.W + '</td><td>' + r.D + '</td><td>' + r.L + '</td>' +
           '<td>' + (r.GD > 0 ? '+' : '') + r.GD + '</td>' +
           '<td class="pts">' + r.Pts + '</td>';
@@ -261,7 +274,7 @@
       const tr = el('tr', i < 8 ? 'q3' : 'out');
       tr.innerHTML =
         '<td class="pos">' + (i + 1) + '</td>' +
-        '<td class="tl"><span class="t-flag">' + r.team.flag + '</span>' + r.team.name + '</td>' +
+        '<td class="tl">' + flagImg(r.team) + r.team.name + '</td>' +
         '<td>' + r.group + '</td><td>' + r.P + '</td>' +
         '<td>' + (r.GD > 0 ? '+' : '') + r.GD + '</td><td class="pts">' + r.Pts + '</td>' +
         '<td>' + (i < 8 ? '<span class="ok">Lolos</span>' : '<span class="no">Gugur</span>') + '</td>';
@@ -281,7 +294,7 @@
     const champ = winnerLabel(state);
     if (champ) {
       const banner = el('div', 'champ-banner');
-      banner.innerHTML = '<div class="champ-trophy">🏆</div><div class="champ-text"><div class="champ-lbl">JUARA DUNIA 2026</div><div class="champ-team">' + champ.flag + ' ' + champ.name + '</div></div>';
+      banner.innerHTML = '<div class="champ-trophy">🏆</div><div class="champ-text"><div class="champ-lbl">JUARA DUNIA 2026</div><div class="champ-team">' + flagImg(champ, 'flag-lg') + ' ' + champ.name + '</div></div>';
       root.appendChild(banner);
     }
 
@@ -308,7 +321,7 @@
     cbody.appendChild(finalTie(ko['M104'], false));
     const cm = el('div', 'champ-mini');
     if (champ) {
-      cm.innerHTML = '<div class="cm-trophy">🏆</div><div class="cm-flag">' + champ.flag + '</div><div class="cm-name">' + champ.name + '</div><div class="cm-lbl">Juara Dunia 2026</div>';
+      cm.innerHTML = '<div class="cm-trophy">🏆</div><div class="cm-flag">' + flagImg(champ, 'flag-xl') + '</div><div class="cm-name">' + champ.name + '</div><div class="cm-lbl">Juara Dunia 2026</div>';
     } else {
       cm.innerHTML = '<div class="cm-trophy dim">🏆</div><div class="cm-lbl dim">Menanti sang juara…</div>';
     }
@@ -361,9 +374,12 @@
   // Bendera kandidat untuk slot yang belum pasti (mis. semua tim Grup A).
   function refFlags(ref) {
     if (/^[WR][A-L]$/.test(ref)) {
-      return DATA.GROUPS[ref[1]].map(function (t) { return t.flag; });
+      return DATA.GROUPS[ref[1]].map(function (t) { return t.iso; });
     }
     return null;
+  }
+  function flagStrip(isoList) {
+    return isoList.map(function (iso) { return flagFromIso(iso, 'flag-xs'); }).join('');
   }
 
   // Label ringkas untuk slot bagan yang belum terisi.
@@ -385,10 +401,10 @@
     }
     let nameHtml;
     if (team) {
-      nameHtml = '<span class="bt-id"><span class="t-flag">' + team.flag + '</span><span class="bt-name">' + team.name + '</span></span>';
+      nameHtml = '<span class="bt-id">' + flagImg(team) + '<span class="bt-name">' + team.name + '</span></span>';
     } else {
       const flags = refFlags(ref);
-      const strip = flags ? '<span class="bt-flags">' + flags.join('') + '</span>' : '';
+      const strip = flags ? '<span class="bt-flags">' + flagStrip(flags) + '</span>' : '';
       nameHtml = '<span class="bt-id">' + strip + '<span class="bt-name tbd">' + slotLabel(ref, label) + '</span></span>';
     }
     return '<div class="bt-row' + (isWin ? ' win' : '') + '">' + nameHtml + '<span class="bt-score">' + sc + '</span></div>';
@@ -419,10 +435,10 @@
     }
     let nameHtml;
     if (team) {
-      nameHtml = '<span class="t-flag">' + team.flag + '</span> ' + team.name;
+      nameHtml = flagImg(team) + ' ' + team.name;
     } else {
       const flags = refFlags(ref);
-      nameHtml = (flags ? '<span class="bt-flags">' + flags.join('') + '</span> ' : '') + '<span class="tbd">' + slotLabel(ref, label) + '</span>';
+      nameHtml = (flags ? '<span class="bt-flags">' + flagStrip(flags) + '</span> ' : '') + '<span class="tbd">' + slotLabel(ref, label) + '</span>';
     }
     return '<div class="ft-row' + (isWin ? ' win' : '') + '"><span class="ft-team">' + nameHtml + '</span><span class="ft-score">' + sc + '</span></div>';
   }
@@ -467,8 +483,8 @@
 
   function adminRow(m) {
     const row = el('div', 'adm-row ' + m.status);
-    const hName = m.homeTeam ? m.homeTeam.flag + ' ' + m.homeTeam.code : (m._homeLabel || 'TBD');
-    const aName = m.awayTeam ? m.awayTeam.code + ' ' + m.awayTeam.flag : (m._awayLabel || 'TBD');
+    const hName = m.homeTeam ? flagImg(m.homeTeam, 'flag-xs') + ' ' + m.homeTeam.code : (m._homeLabel || 'TBD');
+    const aName = m.awayTeam ? m.awayTeam.code + ' ' + flagImg(m.awayTeam, 'flag-xs') : (m._awayLabel || 'TBD');
 
     row.innerHTML =
       '<div class="adm-info"><span class="adm-id">' + m.id + '</span> ' +
