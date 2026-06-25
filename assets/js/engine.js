@@ -87,7 +87,7 @@
 
   /* Resolusi referensi slot babak gugur menjadi tim konkret.
      Mengembalikan map: refKey -> { team, label, resolved } */
-  function buildSlotResolver(tables, thirds, koMatches, groupDone, allGroupsDone) {
+  function buildSlotResolver(tables, thirds, koMatches, groupDone, allGroupsDone, thirdSlotMap) {
     const cache = {};
 
     // Tim juara/runner-up baru dianggap pasti bila grupnya sudah selesai.
@@ -107,11 +107,12 @@
         res = { team: groupTeam(ref[1], 1), label: 'Juara Grup ' + ref[1], resolved: false };
       } else if (/^R[A-L]$/.test(ref)) {
         res = { team: groupTeam(ref[1], 2), label: 'Runner-up Grup ' + ref[1], resolved: false };
-      } else if (/^T[1-8]$/.test(ref)) {
-        // Peringkat-3 lintas grup baru pasti bila SELURUH fase grup selesai.
-        const n = parseInt(ref[1], 10);
-        const row = allGroupsDone ? thirds[n - 1] : null;
-        res = { team: row ? row.team : null, label: 'Peringkat-3 #' + n, resolved: false };
+      } else if (/^T:/.test(ref)) {
+        // Peringkat-3: dialokasikan ke slot sesuai tabel FIFA (himpunan grup asal).
+        // Baru pasti bila SELURUH fase grup selesai.
+        const team = allGroupsDone && thirdSlotMap ? (thirdSlotMap[ref] || null) : null;
+        const letters = ref.slice(2).split('').join('/');
+        res = { team: team, label: 'Peringkat-3 ' + letters, resolved: !!team };
       } else if (/^W#M\d+$/.test(ref)) {
         const mid = ref.split('#')[1];
         const m = koMatches[mid];
@@ -154,6 +155,61 @@
     return side === 'home' ? m.awayTeam : m.homeTeam;
   }
 
+  /* Alokasikan 8 peringkat-3 terbaik ke slot R32 sesuai tabel FIFA.
+     Tiap slot 'T:XYZ' hanya menerima peringkat-3 dari grup pada himpunan XYZ.
+     Dipecahkan sebagai pencocokan bipartit (backtracking) — selalu ada solusi
+     valid untuk kombinasi 8-dari-12 mana pun. */
+  function allocateThirds(koMatches, thirds) {
+    const map = {};
+    // kumpulkan slot 'T:...' dari bagan
+    const slots = [];
+    Object.keys(koMatches).forEach(function (id) {
+      const m = koMatches[id];
+      [m.home.ref, m.away.ref].forEach(function (ref) {
+        if (/^T:/.test(ref) && slots.indexOf(ref) < 0) slots.push(ref);
+      });
+    });
+    if (!slots.length) return map;
+
+    const qualifying = thirds.slice(0, slots.length); // 8 peringkat-3 terbaik
+    const groups = qualifying.map(function (r) { return r.group; });
+    const teamOfGroup = {};
+    qualifying.forEach(function (r) { teamOfGroup[r.group] = r.team; });
+
+    // urutkan slot dari yang paling sedikit kandidat (lebih cepat konvergen)
+    const order = slots.slice().sort(function (a, b) {
+      return candCount(a, groups) - candCount(b, groups);
+    });
+    function candCount(slot, gs) {
+      const allowed = slot.slice(2);
+      return gs.filter(function (g) { return allowed.indexOf(g) >= 0; }).length;
+    }
+
+    const used = {};
+    const pick = {};
+    function bt(i) {
+      if (i === order.length) return true;
+      const slot = order[i];
+      const allowed = slot.slice(2);
+      for (let k = 0; k < groups.length; k++) {
+        const g = groups[k];
+        if (!used[g] && allowed.indexOf(g) >= 0) {
+          used[g] = true; pick[slot] = g;
+          if (bt(i + 1)) return true;
+          used[g] = false; delete pick[slot];
+        }
+      }
+      return false;
+    }
+
+    if (bt(0)) {
+      slots.forEach(function (slot) {
+        if (pick[slot]) map[slot] = teamOfGroup[pick[slot]];
+      });
+    }
+    return map;
+  }
+
   /* Isi homeTeam/awayTeam pada seluruh laga babak gugur sesuai hasil terkini.
      Dilakukan berulang sampai stabil (karena ada rantai ketergantungan). */
   function resolveBracket(state) {
@@ -164,9 +220,11 @@
     const koIndex = {};
     state.koMatches.forEach(function (m) { koIndex[m.id] = m; });
 
+    const thirdSlotMap = allGroupsDone ? allocateThirds(koIndex, thirds) : {};
+
     // beberapa iterasi untuk merambatkan pemenang ke ronde berikut
     for (let pass = 0; pass < 8; pass++) {
-      const resolve = buildSlotResolver(tables, thirds, koIndex, groupDone, allGroupsDone);
+      const resolve = buildSlotResolver(tables, thirds, koIndex, groupDone, allGroupsDone, thirdSlotMap);
       state.koMatches.forEach(function (m) {
         const h = resolve(m.home.ref);
         const a = resolve(m.away.ref);
@@ -177,7 +235,7 @@
       });
     }
 
-    return { tables: tables, thirds: thirds };
+    return { tables: tables, thirds: thirds, thirdSlotMap: thirdSlotMap };
   }
 
   global.WC.engine = {
