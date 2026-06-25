@@ -36,23 +36,24 @@
   ];
 
   // 48 tim dalam 12 grup. Tuan rumah diunggulkan (Meksiko A, Kanada B, USA D).
+  // Argumen: nama, kode 3-huruf, emoji bendera (fallback), kode ISO untuk gambar bendera.
   const GROUPS = {
-    A: [t('Meksiko', 'MEX', '🇲🇽'), t('Kroasia', 'CRO', '🇭🇷'), t('Arab Saudi', 'KSA', '🇸🇦'), t('Kamerun', 'CMR', '🇨🇲')],
-    B: [t('Kanada', 'CAN', '🇨🇦'), t('Belgia', 'BEL', '🇧🇪'), t('Ekuador', 'ECU', '🇪🇨'), t('Qatar', 'QAT', '🇶🇦')],
-    C: [t('Argentina', 'ARG', '🇦🇷'), t('Norwegia', 'NOR', '🇳🇴'), t('Jepang', 'JPN', '🇯🇵'), t('Pantai Gading', 'CIV', '🇨🇮')],
-    D: [t('Amerika Serikat', 'USA', '🇺🇸'), t('Belanda', 'NED', '🇳🇱'), t('Paraguay', 'PAR', '🇵🇾'), t('Ghana', 'GHA', '🇬🇭')],
-    E: [t('Prancis', 'FRA', '🇫🇷'), t('Senegal', 'SEN', '🇸🇳'), t('Korea Selatan', 'KOR', '🇰🇷'), t('Panama', 'PAN', '🇵🇦')],
-    F: [t('Brasil', 'BRA', '🇧🇷'), t('Swiss', 'SUI', '🇨🇭'), t('Iran', 'IRN', '🇮🇷'), t('Honduras', 'HON', '🇭🇳')],
-    G: [t('Spanyol', 'ESP', '🇪🇸'), t('Uruguay', 'URU', '🇺🇾'), t('Mesir', 'EGY', '🇪🇬'), t('Selandia Baru', 'NZL', '🇳🇿')],
-    H: [t('Portugal', 'POR', '🇵🇹'), t('Kolombia', 'COL', '🇨🇴'), t('Australia', 'AUS', '🇦🇺'), t('Uzbekistan', 'UZB', '🇺🇿')],
-    I: [t('Inggris', 'ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿'), t('Maroko', 'MAR', '🇲🇦'), t('Kosta Rika', 'CRC', '🇨🇷'), t('Yordania', 'JOR', '🇯🇴')],
-    J: [t('Jerman', 'GER', '🇩🇪'), t('Denmark', 'DEN', '🇩🇰'), t('Tunisia', 'TUN', '🇹🇳'), t('Curaçao', 'CUW', '🇨🇼')],
-    K: [t('Italia', 'ITA', '🇮🇹'), t('Austria', 'AUT', '🇦🇹'), t('Aljazair', 'ALG', '🇩🇿'), t('Tanjung Verde', 'CPV', '🇨🇻')],
-    L: [t('Polandia', 'POL', '🇵🇱'), t('Nigeria', 'NGA', '🇳🇬'), t('Skotlandia', 'SCO', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'), t('Afrika Selatan', 'RSA', '🇿🇦')]
+    A: [t('Meksiko', 'MEX', '🇲🇽', 'mx'), t('Kroasia', 'CRO', '🇭🇷', 'hr'), t('Arab Saudi', 'KSA', '🇸🇦', 'sa'), t('Kamerun', 'CMR', '🇨🇲', 'cm')],
+    B: [t('Kanada', 'CAN', '🇨🇦', 'ca'), t('Belgia', 'BEL', '🇧🇪', 'be'), t('Ekuador', 'ECU', '🇪🇨', 'ec'), t('Qatar', 'QAT', '🇶🇦', 'qa')],
+    C: [t('Argentina', 'ARG', '🇦🇷', 'ar'), t('Norwegia', 'NOR', '🇳🇴', 'no'), t('Jepang', 'JPN', '🇯🇵', 'jp'), t('Pantai Gading', 'CIV', '🇨🇮', 'ci')],
+    D: [t('Amerika Serikat', 'USA', '🇺🇸', 'us'), t('Belanda', 'NED', '🇳🇱', 'nl'), t('Paraguay', 'PAR', '🇵🇾', 'py'), t('Ghana', 'GHA', '🇬🇭', 'gh')],
+    E: [t('Prancis', 'FRA', '🇫🇷', 'fr'), t('Senegal', 'SEN', '🇸🇳', 'sn'), t('Korea Selatan', 'KOR', '🇰🇷', 'kr'), t('Panama', 'PAN', '🇵🇦', 'pa')],
+    F: [t('Brasil', 'BRA', '🇧🇷', 'br'), t('Swiss', 'SUI', '🇨🇭', 'ch'), t('Iran', 'IRN', '🇮🇷', 'ir'), t('Honduras', 'HON', '🇭🇳', 'hn')],
+    G: [t('Spanyol', 'ESP', '🇪🇸', 'es'), t('Uruguay', 'URU', '🇺🇾', 'uy'), t('Mesir', 'EGY', '🇪🇬', 'eg'), t('Selandia Baru', 'NZL', '🇳🇿', 'nz')],
+    H: [t('Portugal', 'POR', '🇵🇹', 'pt'), t('Kolombia', 'COL', '🇨🇴', 'co'), t('Australia', 'AUS', '🇦🇺', 'au'), t('Uzbekistan', 'UZB', '🇺🇿', 'uz')],
+    I: [t('Inggris', 'ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'gb-eng'), t('Maroko', 'MAR', '🇲🇦', 'ma'), t('Kosta Rika', 'CRC', '🇨🇷', 'cr'), t('Yordania', 'JOR', '🇯🇴', 'jo')],
+    J: [t('Jerman', 'GER', '🇩🇪', 'de'), t('Denmark', 'DEN', '🇩🇰', 'dk'), t('Tunisia', 'TUN', '🇹🇳', 'tn'), t('Curaçao', 'CUW', '🇨🇼', 'cw')],
+    K: [t('Italia', 'ITA', '🇮🇹', 'it'), t('Austria', 'AUT', '🇦🇹', 'at'), t('Aljazair', 'ALG', '🇩🇿', 'dz'), t('Tanjung Verde', 'CPV', '🇨🇻', 'cv')],
+    L: [t('Polandia', 'POL', '🇵🇱', 'pl'), t('Nigeria', 'NGA', '🇳🇬', 'ng'), t('Skotlandia', 'SCO', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'gb-sct'), t('Afrika Selatan', 'RSA', '🇿🇦', 'za')]
   };
 
-  function t(name, code, flag) {
-    return { name: name, code: code, flag: flag };
+  function t(name, code, flag, iso) {
+    return { name: name, code: code, flag: flag, iso: iso };
   }
 
   const GROUP_KEYS = Object.keys(GROUPS);

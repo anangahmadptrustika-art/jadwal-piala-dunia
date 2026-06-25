@@ -131,6 +131,18 @@ html, body {
 .team.tbd { color: var(--muted); font-style: italic; font-weight: 500; font-size: 12.5px; }
 .t-flag { font-size: 17px; }
 
+/* ---------- Gambar bendera (flagcdn) ---------- */
+.flag {
+  height: 13px; width: auto; border-radius: 2px; vertical-align: middle;
+  object-fit: cover; flex: none; background: var(--panel-2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+}
+.flag-xs { height: 10px; }
+.flag-sm { height: 12px; }
+.flag-stat { height: 26px; border-radius: 3px; }
+.flag-lg { height: 22px; border-radius: 3px; }
+.flag-xl { height: 34px; border-radius: 4px; }
+
 /* ---------- Badges ---------- */
 .badge { font-size: 11px; padding: 4px 9px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
 .badge.live { background: rgba(255,59,92,.16); color: var(--live); display: inline-flex; align-items: center; gap: 5px; }
@@ -187,6 +199,7 @@ html, body {
 .std-table td { padding: 9px 4px; text-align: center; border-bottom: 1px solid rgba(38,49,79,.5); }
 .std-table .tl { text-align: left; padding-left: 12px; }
 .std-table .tl .t-flag { margin-right: 7px; }
+.std-table .tl .flag { margin-right: 8px; }
 .std-table .pos { color: var(--muted); width: 28px; }
 .std-table .pts { font-weight: 800; color: var(--text); }
 .std-table tbody tr.q1 { background: linear-gradient(90deg, rgba(52,211,153,.10), transparent); }
@@ -246,7 +259,8 @@ html, body {
 .bt-id { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
 .br-tie.rt .bt-id { flex-direction: row-reverse; }
 .bt-id .t-flag { font-size: 15px; }
-.bt-flags { font-size: 10px; letter-spacing: -2px; opacity: .85; white-space: nowrap; }
+.bt-flags { display: inline-flex; gap: 1px; opacity: .9; }
+.bt-flags .flag { height: 9px; box-shadow: 0 0 0 .5px rgba(0,0,0,.3); }
 .bt-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-name.tbd { color: var(--muted); font-style: italic; font-weight: 500; font-size: 10.5px; }
 .bt-row.win { background: linear-gradient(90deg, rgba(52,211,153,.18), transparent); }
