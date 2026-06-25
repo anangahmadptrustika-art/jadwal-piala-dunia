@@ -129,82 +129,81 @@
   }
 
   /* =================================================================
-     STRUKTUR BABAK GUGUR
+     STRUKTUR BABAK GUGUR — bagan RESMI Piala Dunia 2026 (jam WIB).
      Slot R32 dirujuk dari posisi grup:
-       W{grup}  = juara grup
-       R{grup}  = runner-up grup
-       T1..T8   = 8 peringkat-3 terbaik (diurutkan otomatis)
+       W{grup}  = juara grup (1X)
+       R{grup}  = runner-up grup (2X)
+       T:XYZ... = peringkat-3 terbaik yang dialokasikan ke slot ini
+                  (XYZ = himpunan grup asal yang mungkin, sesuai tabel FIFA)
      Babak berikut dirujuk dari pemenang/kalah laga sebelumnya:
        W#M73 = pemenang laga M73,  L#M101 = yang kalah di M101
      ================================================================= */
   function buildKnockoutMatches() {
     const ko = [];
 
-    // --- Babak 32 Besar (M73-M88) ---
+    // --- Babak 32 Besar (M73-M88) [ref1, ref2, tanggal, jam WIB] ---
     const r32 = [
-      ['WA', 'T1'], ['WB', 'T2'], ['WC', 'T3'], ['WD', 'T4'],
-      ['WE', 'T5'], ['WF', 'T6'], ['WG', 'T7'], ['WH', 'T8'],
-      ['WI', 'RA'], ['WJ', 'RB'], ['WK', 'RC'], ['WL', 'RD'],
-      ['RE', 'RF'], ['RG', 'RH'], ['RI', 'RJ'], ['RK', 'RL']
+      ['WE', 'T:ABCDF', '2026-06-30', '03:30'], // L1 (GER)
+      ['WI', 'T:CDFGH', '2026-07-01', '04:00'], // L2
+      ['RA', 'RB',      '2026-06-29', '02:00'], // L3
+      ['WF', 'RC',      '2026-06-30', '08:00'], // L4
+      ['RK', 'RL',      '2026-07-03', '06:00'], // L5
+      ['WH', 'RJ',      '2026-07-03', '02:00'], // L6
+      ['WD', 'T:BEFIJ', '2026-07-02', '07:00'], // L7 (USA)
+      ['WG', 'T:AEHIJ', '2026-07-02', '03:00'], // L8
+      ['WC', 'RF',      '2026-06-30', '00:00'], // R1
+      ['RE', 'RI',      '2026-07-01', '02:00'], // R2
+      ['WA', 'T:CEFHI', '2026-07-01', '08:00'], // R3 (MEX)
+      ['WL', 'T:EHIJK', '2026-07-01', '23:00'], // R4
+      ['WJ', 'RH',      '2026-07-04', '05:00'], // R5 (ARG)
+      ['RD', 'RG',      '2026-07-04', '01:00'], // R6
+      ['WB', 'T:EFGIJ', '2026-07-03', '10:00'], // R7
+      ['WK', 'T:DEIJL', '2026-07-04', '10:30']  // R8
     ];
-    const r32Dates = [
-      ['2026-06-28', '16:00'], ['2026-06-28', '20:00'],
-      ['2026-06-29', '16:00'], ['2026-06-29', '20:00'],
-      ['2026-06-30', '16:00'], ['2026-06-30', '20:00'],
-      ['2026-07-01', '16:00'], ['2026-07-01', '20:00'],
-      ['2026-07-02', '16:00'], ['2026-07-02', '20:00'],
-      ['2026-07-03', '16:00'], ['2026-07-03', '20:00'],
-      ['2026-07-03', '23:00'], ['2026-07-02', '23:00'],
-      ['2026-07-01', '23:00'], ['2026-06-30', '23:00']
-    ];
-    r32.forEach(function (pair, i) {
-      ko.push(koMatch('M' + (73 + i), 73 + i, 'r32', 'Babak 32 Besar',
-        pair[0], pair[1], r32Dates[i][0], r32Dates[i][1], i));
+    r32.forEach(function (m, i) {
+      ko.push(koMatch('M' + (73 + i), 73 + i, 'r32', 'Babak 32 Besar', m[0], m[1], m[2], m[3], i));
     });
 
     // --- Babak 16 Besar (M89-M96) ---
-    const r16Pairs = [
-      ['W#M73', 'W#M74'], ['W#M75', 'W#M76'], ['W#M77', 'W#M78'], ['W#M79', 'W#M80'],
-      ['W#M81', 'W#M82'], ['W#M83', 'W#M84'], ['W#M85', 'W#M86'], ['W#M87', 'W#M88']
+    const r16 = [
+      ['W#M73', 'W#M74', '2026-07-05', '04:00'],
+      ['W#M75', 'W#M76', '2026-07-05', '02:00'],
+      ['W#M77', 'W#M78', '2026-07-07', '04:00'],
+      ['W#M79', 'W#M80', '2026-07-07', '07:00'],
+      ['W#M81', 'W#M82', '2026-07-06', '03:00'],
+      ['W#M83', 'W#M84', '2026-07-06', '07:00'],
+      ['W#M85', 'W#M86', '2026-07-07', '23:00', 'WIT'],
+      ['W#M87', 'W#M88', '2026-07-08', '03:00']
     ];
-    const r16Dates = [
-      ['2026-07-04', '16:00'], ['2026-07-04', '20:00'],
-      ['2026-07-05', '16:00'], ['2026-07-05', '20:00'],
-      ['2026-07-06', '16:00'], ['2026-07-06', '20:00'],
-      ['2026-07-07', '16:00'], ['2026-07-07', '20:00']
-    ];
-    r16Pairs.forEach(function (pair, i) {
-      ko.push(koMatch('M' + (89 + i), 89 + i, 'r16', 'Babak 16 Besar',
-        pair[0], pair[1], r16Dates[i][0], r16Dates[i][1], i));
+    r16.forEach(function (m, i) {
+      ko.push(koMatch('M' + (89 + i), 89 + i, 'r16', 'Babak 16 Besar', m[0], m[1], m[2], m[3], i, m[4]));
     });
 
     // --- Perempat Final (M97-M100) ---
-    const qfPairs = [
-      ['W#M89', 'W#M90'], ['W#M91', 'W#M92'], ['W#M93', 'W#M94'], ['W#M95', 'W#M96']
+    const qf = [
+      ['W#M89', 'W#M90', '2026-07-10', '03:00'],
+      ['W#M91', 'W#M92', '2026-07-11', '02:00'],
+      ['W#M93', 'W#M94', '2026-07-12', '04:00'],
+      ['W#M95', 'W#M96', '2026-07-12', '08:00']
     ];
-    const qfDates = [
-      ['2026-07-09', '16:00'], ['2026-07-09', '20:00'],
-      ['2026-07-11', '16:00'], ['2026-07-11', '20:00']
-    ];
-    qfPairs.forEach(function (pair, i) {
-      ko.push(koMatch('M' + (97 + i), 97 + i, 'qf', 'Perempat Final',
-        pair[0], pair[1], qfDates[i][0], qfDates[i][1], i));
+    qf.forEach(function (m, i) {
+      ko.push(koMatch('M' + (97 + i), 97 + i, 'qf', 'Perempat Final', m[0], m[1], m[2], m[3], i));
     });
 
     // --- Semifinal (M101-M102) ---
-    ko.push(koMatch('M101', 101, 'sf', 'Semifinal', 'W#M97', 'W#M98', '2026-07-14', '20:00', 0));
-    ko.push(koMatch('M102', 102, 'sf', 'Semifinal', 'W#M99', 'W#M100', '2026-07-15', '20:00', 1));
+    ko.push(koMatch('M101', 101, 'sf', 'Semifinal', 'W#M97', 'W#M98', '2026-07-15', '02:00', 0));
+    ko.push(koMatch('M102', 102, 'sf', 'Semifinal', 'W#M99', 'W#M100', '2026-07-16', '02:00', 1));
 
     // --- Perebutan Juara 3 (M103) ---
-    ko.push(koMatch('M103', 103, 'third', 'Perebutan Juara 3', 'L#M101', 'L#M102', '2026-07-18', '20:00', 0));
+    ko.push(koMatch('M103', 103, 'third', 'Perebutan Juara 3', 'L#M101', 'L#M102', '2026-07-19', '04:00', 0));
 
     // --- Final (M104) ---
-    ko.push(koMatch('M104', 104, 'final', 'Final', 'W#M101', 'W#M102', '2026-07-19', '20:00', 0));
+    ko.push(koMatch('M104', 104, 'final', 'Final', 'W#M101', 'W#M102', '2026-07-20', '02:00', 0));
 
     return ko;
   }
 
-  function koMatch(id, no, stage, label, homeRef, awayRef, date, time, venueOffset) {
+  function koMatch(id, no, stage, label, homeRef, awayRef, date, time, venueOffset, tz) {
     return {
       id: id,
       no: no,
@@ -216,6 +215,7 @@
       awayTeam: null,
       date: date,
       time: time,
+      tz: tz || 'WIB',
       venue: VENUES[(no + venueOffset) % VENUES.length],
       score: { home: null, away: null },
       penalties: { home: null, away: null },

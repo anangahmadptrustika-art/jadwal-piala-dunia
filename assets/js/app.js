@@ -364,7 +364,7 @@
     const tie = el('div', 'br-tie ' + m.status + (side === 'right' ? ' rt' : ''));
     const winSide = global.WC.engine.effectiveWinnerSide(m);
     tie.innerHTML =
-      '<div class="bt-no">' + m.id + ' &middot; ' + shortDate(m.date) + '</div>' +
+      '<div class="bt-no">' + m.id + ' &middot; ' + shortDate(m.date) + ' ' + m.time + ' ' + (m.tz || 'WIB') + '</div>' +
       btRow(m, 'home', winSide === 'home', side) +
       btRow(m, 'away', winSide === 'away', side) +
       (m.status === 'live' ? '<div class="bt-live">LIVE ' + m.minute + "'</div>" : '');
@@ -386,7 +386,7 @@
   function slotLabel(ref, fullLabel) {
     if (/^W[A-L]$/.test(ref)) return 'Juara ' + ref[1];
     if (/^R[A-L]$/.test(ref)) return 'Ke-2 ' + ref[1];
-    if (/^T[1-8]$/.test(ref)) return 'Pos-3 #' + ref[1];
+    if (/^T:/.test(ref)) return 'Pos-3 ' + ref.slice(2).split('').join('/');
     return fullLabel || 'TBD';
   }
 
@@ -416,7 +416,7 @@
     if (!m) return c;
     const winSide = global.WC.engine.effectiveWinnerSide(m);
     c.innerHTML =
-      '<div class="ft-head">' + m.id + ' &middot; ' + shortDate(m.date) + ' &middot; ' + m.venue.city + '</div>' +
+      '<div class="ft-head">' + m.id + ' &middot; ' + shortDate(m.date) + ' ' + m.time + ' ' + (m.tz || 'WIB') + '</div>' +
       ftRow(m, 'home', winSide === 'home') +
       '<div class="ft-vs">' + (m.status === 'scheduled' ? m.time : 'vs') + '</div>' +
       ftRow(m, 'away', winSide === 'away') +
