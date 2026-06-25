@@ -271,6 +271,13 @@ html, body {
 .bt-flags .flag { height: 9px; box-shadow: 0 0 0 .5px rgba(0,0,0,.3); }
 .bt-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-name.tbd { color: var(--muted); font-style: italic; font-weight: 500; font-size: 10.5px; }
+.bt-code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 700; font-size: 11px; color: var(--muted);
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 5px; padding: 2px 7px; letter-spacing: .5px;
+}
+.ft-team .bt-code { font-size: 12px; }
 .bt-row.win { background: linear-gradient(90deg, rgba(52,211,153,.18), transparent); }
 .br-tie.rt .bt-row.win { background: linear-gradient(270deg, rgba(52,211,153,.18), transparent); }
 .bt-row.win .bt-name { color: var(--green); }

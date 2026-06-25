@@ -382,11 +382,13 @@
     return isoList.map(function (iso) { return flagFromIso(iso, 'flag-xs'); }).join('');
   }
 
-  // Label ringkas untuk slot bagan yang belum terisi.
-  function slotLabel(ref, fullLabel) {
-    if (/^W[A-L]$/.test(ref)) return 'Juara ' + ref[1];
-    if (/^R[A-L]$/.test(ref)) return 'Ke-2 ' + ref[1];
-    if (/^T:/.test(ref)) return 'Pos-3 ' + ref.slice(2).split('').join('/');
+  // Kode ringkas untuk slot bagan yang belum pasti.
+  //   WX -> "X1" (juara grup X),  RX -> "X2" (runner-up grup X),
+  //   T:ABCDF -> "3 ABCDF" (peringkat-3 dari salah satu grup itu).
+  function slotCode(ref, fullLabel) {
+    if (/^W[A-L]$/.test(ref)) return ref[1] + '1';
+    if (/^R[A-L]$/.test(ref)) return ref[1] + '2';
+    if (/^T:/.test(ref)) return '3 ' + ref.slice(2);
     return fullLabel || 'TBD';
   }
 
@@ -403,9 +405,7 @@
     if (team) {
       nameHtml = '<span class="bt-id">' + flagImg(team) + '<span class="bt-name">' + team.name + '</span></span>';
     } else {
-      const flags = refFlags(ref);
-      const strip = flags ? '<span class="bt-flags">' + flagStrip(flags) + '</span>' : '';
-      nameHtml = '<span class="bt-id">' + strip + '<span class="bt-name tbd">' + slotLabel(ref, label) + '</span></span>';
+      nameHtml = '<span class="bt-id"><span class="bt-code">' + slotCode(ref, label) + '</span></span>';
     }
     return '<div class="bt-row' + (isWin ? ' win' : '') + '">' + nameHtml + '<span class="bt-score">' + sc + '</span></div>';
   }
@@ -437,8 +437,7 @@
     if (team) {
       nameHtml = flagImg(team) + ' ' + team.name;
     } else {
-      const flags = refFlags(ref);
-      nameHtml = (flags ? '<span class="bt-flags">' + flagStrip(flags) + '</span> ' : '') + '<span class="tbd">' + slotLabel(ref, label) + '</span>';
+      nameHtml = '<span class="bt-code">' + slotCode(ref, label) + '</span>';
     }
     return '<div class="ft-row' + (isWin ? ' win' : '') + '"><span class="ft-team">' + nameHtml + '</span><span class="ft-score">' + sc + '</span></div>';
   }
