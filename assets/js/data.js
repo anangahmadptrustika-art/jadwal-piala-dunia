@@ -35,21 +35,22 @@
     { city: 'Boston', stadium: 'Gillette Stadium', country: '🇺🇸' }
   ];
 
-  // 48 tim dalam 12 grup. Tuan rumah diunggulkan (Meksiko A, Kanada B, USA D).
+  // 48 tim dalam 12 grup — hasil drawing resmi Piala Dunia 2026 (5 Des 2025).
+  // Urutan posisi 1–4 mengikuti pot unggulan (Pot 1 → Pot 4).
   // Argumen: nama, kode 3-huruf, emoji bendera (fallback), kode ISO untuk gambar bendera.
   let GROUPS = {
-    A: [t('Meksiko', 'MEX', '🇲🇽', 'mx'), t('Kroasia', 'CRO', '🇭🇷', 'hr'), t('Arab Saudi', 'KSA', '🇸🇦', 'sa'), t('Kamerun', 'CMR', '🇨🇲', 'cm')],
-    B: [t('Kanada', 'CAN', '🇨🇦', 'ca'), t('Belgia', 'BEL', '🇧🇪', 'be'), t('Ekuador', 'ECU', '🇪🇨', 'ec'), t('Qatar', 'QAT', '🇶🇦', 'qa')],
-    C: [t('Argentina', 'ARG', '🇦🇷', 'ar'), t('Norwegia', 'NOR', '🇳🇴', 'no'), t('Jepang', 'JPN', '🇯🇵', 'jp'), t('Pantai Gading', 'CIV', '🇨🇮', 'ci')],
-    D: [t('Amerika Serikat', 'USA', '🇺🇸', 'us'), t('Belanda', 'NED', '🇳🇱', 'nl'), t('Paraguay', 'PAR', '🇵🇾', 'py'), t('Ghana', 'GHA', '🇬🇭', 'gh')],
-    E: [t('Prancis', 'FRA', '🇫🇷', 'fr'), t('Senegal', 'SEN', '🇸🇳', 'sn'), t('Korea Selatan', 'KOR', '🇰🇷', 'kr'), t('Panama', 'PAN', '🇵🇦', 'pa')],
-    F: [t('Brasil', 'BRA', '🇧🇷', 'br'), t('Swiss', 'SUI', '🇨🇭', 'ch'), t('Iran', 'IRN', '🇮🇷', 'ir'), t('Honduras', 'HON', '🇭🇳', 'hn')],
-    G: [t('Spanyol', 'ESP', '🇪🇸', 'es'), t('Uruguay', 'URU', '🇺🇾', 'uy'), t('Mesir', 'EGY', '🇪🇬', 'eg'), t('Selandia Baru', 'NZL', '🇳🇿', 'nz')],
-    H: [t('Portugal', 'POR', '🇵🇹', 'pt'), t('Kolombia', 'COL', '🇨🇴', 'co'), t('Australia', 'AUS', '🇦🇺', 'au'), t('Uzbekistan', 'UZB', '🇺🇿', 'uz')],
-    I: [t('Inggris', 'ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'gb-eng'), t('Maroko', 'MAR', '🇲🇦', 'ma'), t('Kosta Rika', 'CRC', '🇨🇷', 'cr'), t('Yordania', 'JOR', '🇯🇴', 'jo')],
-    J: [t('Jerman', 'GER', '🇩🇪', 'de'), t('Denmark', 'DEN', '🇩🇰', 'dk'), t('Tunisia', 'TUN', '🇹🇳', 'tn'), t('Curaçao', 'CUW', '🇨🇼', 'cw')],
-    K: [t('Italia', 'ITA', '🇮🇹', 'it'), t('Austria', 'AUT', '🇦🇹', 'at'), t('Aljazair', 'ALG', '🇩🇿', 'dz'), t('Tanjung Verde', 'CPV', '🇨🇻', 'cv')],
-    L: [t('Polandia', 'POL', '🇵🇱', 'pl'), t('Nigeria', 'NGA', '🇳🇬', 'ng'), t('Skotlandia', 'SCO', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'gb-sct'), t('Afrika Selatan', 'RSA', '🇿🇦', 'za')]
+    A: [t('Meksiko', 'MEX', '🇲🇽', 'mx'), t('Korea Selatan', 'KOR', '🇰🇷', 'kr'), t('Afrika Selatan', 'RSA', '🇿🇦', 'za'), t('Ceko', 'CZE', '🇨🇿', 'cz')],
+    B: [t('Kanada', 'CAN', '🇨🇦', 'ca'), t('Swiss', 'SUI', '🇨🇭', 'ch'), t('Qatar', 'QAT', '🇶🇦', 'qa'), t('Bosnia-Herzegovina', 'BIH', '🇧🇦', 'ba')],
+    C: [t('Brasil', 'BRA', '🇧🇷', 'br'), t('Maroko', 'MAR', '🇲🇦', 'ma'), t('Skotlandia', 'SCO', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'gb-sct'), t('Haiti', 'HAI', '🇭🇹', 'ht')],
+    D: [t('Amerika Serikat', 'USA', '🇺🇸', 'us'), t('Australia', 'AUS', '🇦🇺', 'au'), t('Paraguay', 'PAR', '🇵🇾', 'py'), t('Turki', 'TUR', '🇹🇷', 'tr')],
+    E: [t('Jerman', 'GER', '🇩🇪', 'de'), t('Ekuador', 'ECU', '🇪🇨', 'ec'), t('Pantai Gading', 'CIV', '🇨🇮', 'ci'), t('Curaçao', 'CUW', '🇨🇼', 'cw')],
+    F: [t('Belanda', 'NED', '🇳🇱', 'nl'), t('Jepang', 'JPN', '🇯🇵', 'jp'), t('Tunisia', 'TUN', '🇹🇳', 'tn'), t('Swedia', 'SWE', '🇸🇪', 'se')],
+    G: [t('Belgia', 'BEL', '🇧🇪', 'be'), t('Iran', 'IRN', '🇮🇷', 'ir'), t('Mesir', 'EGY', '🇪🇬', 'eg'), t('Selandia Baru', 'NZL', '🇳🇿', 'nz')],
+    H: [t('Spanyol', 'ESP', '🇪🇸', 'es'), t('Uruguay', 'URU', '🇺🇾', 'uy'), t('Arab Saudi', 'KSA', '🇸🇦', 'sa'), t('Tanjung Verde', 'CPV', '🇨🇻', 'cv')],
+    I: [t('Prancis', 'FRA', '🇫🇷', 'fr'), t('Senegal', 'SEN', '🇸🇳', 'sn'), t('Norwegia', 'NOR', '🇳🇴', 'no'), t('Irak', 'IRQ', '🇮🇶', 'iq')],
+    J: [t('Argentina', 'ARG', '🇦🇷', 'ar'), t('Austria', 'AUT', '🇦🇹', 'at'), t('Aljazair', 'ALG', '🇩🇿', 'dz'), t('Yordania', 'JOR', '🇯🇴', 'jo')],
+    K: [t('Portugal', 'POR', '🇵🇹', 'pt'), t('Kolombia', 'COL', '🇨🇴', 'co'), t('Uzbekistan', 'UZB', '🇺🇿', 'uz'), t('DR Kongo', 'COD', '🇨🇩', 'cd')],
+    L: [t('Inggris', 'ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'gb-eng'), t('Kroasia', 'CRO', '🇭🇷', 'hr'), t('Panama', 'PAN', '🇵🇦', 'pa'), t('Ghana', 'GHA', '🇬🇭', 'gh')]
   };
 
   function t(name, code, flag, iso) {
