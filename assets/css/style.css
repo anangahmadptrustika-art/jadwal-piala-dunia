@@ -50,12 +50,20 @@ html, body {
 .brand-text strong { display: block; font-size: 16px; letter-spacing: .5px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .brand-text small { color: var(--muted); font-size: 11px; }
 
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .status-bar {
   display: flex; align-items: center; gap: 7px;
   font-size: 12px; color: var(--muted);
   background: var(--panel); border: 1px solid var(--line);
   padding: 6px 12px; border-radius: 999px;
 }
+.data-source {
+  font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); white-space: nowrap;
+}
+.data-source.live { color: var(--green); background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.4); }
+.data-source.sample { color: var(--gold); background: rgba(245,197,66,.10); border-color: rgba(245,197,66,.35); }
+.data-source .ds-detail { color: var(--muted); font-weight: 500; margin-left: 4px; }
 .rt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
 .rt-dot.on { background: var(--live); box-shadow: 0 0 0 0 rgba(255,59,92,.7); animation: pulse 1.4s infinite; }
 .rt-sep { opacity: .4; }

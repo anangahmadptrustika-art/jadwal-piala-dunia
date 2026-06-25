@@ -301,6 +301,19 @@
     return ready[0] || null;
   }
 
+  /* ---------- Data live (TheSportsDB dll.) ----------
+     Mengganti seluruh state dengan data nyata dari API. Tidak menulis ke
+     localStorage agar setiap muat ulang menarik data live terbaru. */
+  function ingestLive(groups, groupMatches, koMatches, sourceLabel) {
+    if (simTimer) { clearInterval(simTimer); simTimer = null; }
+    if (groups) global.WC.data.setGroups(groups);
+    state.groupMatches = groupMatches;
+    state.koMatches = koMatches;
+    state.liveSource = sourceLabel || 'Live';
+    state.updatedAt = Date.now();
+    emit('live');
+  }
+
   /* ---------- Init ---------- */
   function init() {
     load();
@@ -325,7 +338,8 @@
     stopSimulator: stopSimulator,
     isSimulating: isSimulating,
     setSimSpeed: function (s) { simSpeed = s; },
-    getSimSpeed: function () { return simSpeed; }
+    getSimSpeed: function () { return simSpeed; },
+    ingestLive: ingestLive
   };
 
 })(window);
