@@ -62,7 +62,7 @@ html, body {
   border: 1px solid var(--line); white-space: nowrap;
 }
 .data-source.live { color: var(--green); background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.4); }
-.data-source.sample { color: var(--gold); background: rgba(245,197,66,.10); border-color: rgba(245,197,66,.35); }
+.data-source.sample { color: var(--accent); background: rgba(45,212,191,.10); border-color: rgba(45,212,191,.35); }
 .data-source .ds-detail { color: var(--muted); font-weight: 500; margin-left: 4px; }
 .rt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
 .rt-dot.on { background: var(--live); box-shadow: 0 0 0 0 rgba(255,59,92,.7); animation: pulse 1.4s infinite; }

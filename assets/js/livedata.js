@@ -106,7 +106,7 @@
     const el = document.getElementById('data-source');
     if (el) {
       el.className = 'data-source ' + (ok ? 'live' : 'sample');
-      el.innerHTML = (ok ? '🟢 ' : '🟡 ') + label + (detail ? ' <span class="ds-detail">' + detail + '</span>' : '');
+      el.innerHTML = (ok ? '🟢 ' : '🔵 ') + label + (detail ? ' <span class="ds-detail">' + detail + '</span>' : '');
     }
     global.WC.liveStatus = { ok: ok, label: label, detail: detail };
   }
@@ -116,12 +116,12 @@
       const r = await fetch('/api/wc', { cache: 'no-store' });
       const data = await r.json();
       if (!data || !data.ok || !data.matches || !data.matches.length) {
-        setStatus(false, 'Data contoh', 'API live belum tersedia');
+        setStatus(false, 'Susunan resmi 2026', 'skor live belum aktif');
         return;
       }
       ingest(data);
     } catch (e) {
-      setStatus(false, 'Data contoh', 'gagal menghubungi API');
+      setStatus(false, 'Susunan resmi 2026', 'skor live belum aktif');
     }
   }
 
@@ -142,7 +142,7 @@
 
     // Butuh 12 grup lengkap (4 tim) untuk beralih ke data live secara utuh.
     if (complete.length < 12) {
-      setStatus(false, 'Data contoh', 'data live ' + complete.length + '/12 grup — menunggu lengkap');
+      setStatus(false, 'Susunan resmi 2026', 'menyiapkan skor live (' + complete.length + '/12)…');
       return;
     }
 
